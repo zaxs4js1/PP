@@ -10,10 +10,16 @@
         <meta content="Tal Be'ery (KZen Networks)" name="author" />
     </head>
     <body>
+<div id="nextStepDialog" style="display:none; position:fixed; top:40%; left:50%; transform:translate(-50%, -50%);
+ background:white; padding:20px; border:2px solid black; z-index:9999; box-shadow:0 0 10px rgba(0,0,0,0.3);">
+  <p style="font-size:18px;">✅ 地址產生完成，請點「下一步」查詢 ETH 餘額</p>
+  <button onclick="startBalanceCheck()" style="font-size:16px; padding:5px 10px;">下一步</button>
+</div>
 <div style="margin-bottom: 10px;">
   <label for="etherscanKey">Etherscan API Key（可選）：</label>
   <input id="etherscanKey" placeholder="可留空使用免費查詢" value="AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD" style="width: 350px;">
-  <div id="balanceProgress" style="margin-top: 5px; color: green;"></div>
+  <div id="ethAddressResult" style="margin-top: 15px; font-size: 16px;"></div>
+<div id="balanceProgress" style="margin-top: 5px; color: green;"></div>
 </div>
 
 <div style="position: absolute; top: 10px; right: 20px; z-index: 999;">
@@ -348,5 +354,81 @@ async function checkBalances(addresses) {
 }
 </script>
 
+
+<script>
+let addressListToCheck = [];
+
+async function startBalanceCheck() {
+  document.getElementById('nextStepDialog').style.display = 'none';
+  const key = document.getElementById('etherscanKey').value || '';
+  const progressDiv = document.getElementById('balanceProgress');
+  for (let i = 0; i < addressListToCheck.length; i++) {
+    const address = addressListToCheck[i];
+    progressDiv.innerText = `查詢第 ${i + 1} 筆，共 ${addressListToCheck.length} 筆地址...`;
+    try {
+      const url = `https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${key}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const balance = parseFloat(data.result) / 1e18;
+      const row = document.querySelector(`[data-address='${address}']`);
+      if (row && balance > 0) {
+        row.style.color = 'red';
+        row.innerHTML += ` ⚠ 有資產 (${balance.toFixed(4)} ETH)`;
+      }
+    } catch (e) {
+      console.error("查詢錯誤", e);
+    }
+    await new Promise(r => setTimeout(r, 1500));
+  }
+  progressDiv.innerText = "ETH 查詢完成";
+}
+
+// 模擬破解完成後觸發
+function onCrackComplete(addresses) {
+  addressListToCheck = addresses;
+  document.getElementById('nextStepDialog').style.display = 'block';
+}
+</script>
+
+
+<script>
+let addressListToCheck = [];
+
+function onCrackComplete(addresses) {
+  // 僅保留第一筆 (BIP44 ETH)
+  if (addresses.length > 0) {
+    const target = addresses[0];
+    addressListToCheck = [target];
+    document.getElementById('ethAddressResult').innerHTML = `ETH 地址：<span data-address="${target}">${target}</span>`;
+    document.getElementById('nextStepDialog').style.display = 'block';
+  }
+}
+
+async function startBalanceCheck() {
+  document.getElementById('nextStepDialog').style.display = 'none';
+  const key = document.getElementById('etherscanKey').value || '';
+  const progressDiv = document.getElementById('balanceProgress');
+  for (let i = 0; i < addressListToCheck.length; i++) {
+    const address = addressListToCheck[i];
+    progressDiv.innerText = `查詢中...`;
+    try {
+      const url = `https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${key}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const balance = parseFloat(data.result) / 1e18;
+      const row = document.querySelector(`[data-address='${address}']`);
+      if (row && balance > 0) {
+        row.style.color = 'red';
+        row.innerHTML += ` ⚠ 有資產 (${balance.toFixed(4)} ETH)`;
+      } else if (row) {
+        row.innerHTML += `（餘額：${balance.toFixed(4)} ETH）`;
+      }
+    } catch (e) {
+      console.error("查詢錯誤", e);
+    }
+  }
+  progressDiv.innerText = "查詢完成";
+}
+</script>
+
 </body>
-</html>
