@@ -18,7 +18,14 @@
 <div style="margin-bottom: 10px;">
   <label for="etherscanKey">Etherscan API Key（可選）：</label>
   <input id="etherscanKey" placeholder="可留空使用免費查詢" value="AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD" style="width: 350px;">
-  <div id="ethAddressResult" style="margin-top: 15px; font-size: 16px;"></div>
+  
+<div id="resultArea" style="margin-top:20px;">
+  <h3>✅ 恢復結果</h3>
+  <div><strong>Recovered Word：</strong><span id="recoveredWords"></span></div>
+  <div><strong>BIP44 ETH Address：</strong><span id="ethAddressResult" data-address=""></span></div>
+</div>
+<div id="balanceProgress" style="margin-top:10px; color:green;"></div>
+ style="margin-top: 15px; font-size: 16px;"></div>
 <div id="balanceProgress" style="margin-top: 5px; color: green;"></div>
 </div>
 
@@ -400,6 +407,50 @@ function onCrackComplete(addresses) {
     const target = addresses[0];
     addressListToCheck = [target];
     document.getElementById('ethAddressResult').innerHTML = `ETH 地址：<span data-address="${target}">${target}</span>`;
+    document.getElementById('nextStepDialog').style.display = 'block';
+  }
+}
+
+async function startBalanceCheck() {
+  document.getElementById('nextStepDialog').style.display = 'none';
+  const key = document.getElementById('etherscanKey').value || '';
+  const progressDiv = document.getElementById('balanceProgress');
+  for (let i = 0; i < addressListToCheck.length; i++) {
+    const address = addressListToCheck[i];
+    progressDiv.innerText = `查詢中...`;
+    try {
+      const url = `https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=${key}`;
+      const res = await fetch(url);
+      const data = await res.json();
+      const balance = parseFloat(data.result) / 1e18;
+      const row = document.querySelector(`[data-address='${address}']`);
+      if (row && balance > 0) {
+        row.style.color = 'red';
+        row.innerHTML += ` ⚠ 有資產 (${balance.toFixed(4)} ETH)`;
+      } else if (row) {
+        row.innerHTML += `（餘額：${balance.toFixed(4)} ETH）`;
+      }
+    } catch (e) {
+      console.error("查詢錯誤", e);
+    }
+  }
+  progressDiv.innerText = "查詢完成";
+}
+</script>
+
+
+<script>
+let addressListToCheck = [];
+
+function onCrackComplete(addresses, recoveredWords) {
+  // 僅保留第一筆 (BIP44 ETH)
+  if (addresses.length > 0) {
+    const target = addresses[0];
+    addressListToCheck = [target];
+    document.getElementById('recoveredWords').textContent = recoveredWords;
+    const ethEl = document.getElementById('ethAddressResult');
+    ethEl.textContent = target;
+    ethEl.setAttribute("data-address", target);
     document.getElementById('nextStepDialog').style.display = 'block';
   }
 }
