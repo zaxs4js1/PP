@@ -1,0 +1,65 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <title>BTC / ETH 餘額查詢工具</title>
+  <script src="https://cdn.jsdelivr.net/npm/emailjs-com@3/dist/email.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    body { font-family: "Segoe UI", sans-serif; padding: 20px; background: #f9f9f9; }
+    #version { position: absolute; top: 10px; right: 20px; font-weight: bold; color: #888; }
+    textarea { width: 100%; height: 120px; font-size: 16px; padding: 10px; border: 1px solid #ccc; border-radius: 8px; margin-bottom: 10px; }
+    select, button { font-size: 16px; padding: 10px 18px; margin: 5px 10px 5px 0; border-radius: 6px; border: 1px solid #aaa; }
+    button { background: #2d89ef; color: white; border: none; cursor: pointer; }
+    button:hover { background: #1b5fa7; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; background: white; border-radius: 6px; overflow: hidden; }
+    th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+    th { background-color: #eee; }
+    .highlight a { color: red; font-weight: bold; text-decoration: none; }
+  </style>
+</head>
+<body>
+  <div id="version">v2.6</div>
+  <h2>BTC / ETH 餘額查詢工具（Email通知）</h2>
+
+  <label for="coinMode">幣種選擇：</label>
+  <select id="coinMode">
+    <option value="both">ETH & BTC（預設）</option>
+    <option value="ETH">ETH</option>
+    <option value="BTC">BTC</option>
+  </select><br>
+
+  <textarea id="inputText" placeholder="請貼上含地址的內容，例如助記詞推導結果..."></textarea><br>
+
+  <button onclick="startCheck()">開始查詢</button>
+  <button onclick="exportExcel()">匯出 Excel</button>
+
+  <div id="status"></div>
+
+  <table id="resultTable" style="display:none">
+    <thead>
+      <tr><th>詞彙</th><th>地址</th><th>幣種</th><th>餘額</th></tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    emailjs.init("TpndbPuH4Drgyd0ec");
+  </script>
+  <script src="btc-checker.js"></script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const params = new URLSearchParams(window.location.search);
+    const html = decodeURIComponent(params.get('html') || '');
+    const input = document.getElementById("inputText");
+    if (input && html) {
+        input.value = html;
+        const button = document.querySelector("button");
+        if (button) button.click();
+    }
+});
+</script>
+</body>
+</html>

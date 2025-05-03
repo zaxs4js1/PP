@@ -3,17 +3,61 @@
 <html lang="zh">
 <head>
     <meta charset="UTF-8">
-    <title>下一步資料</title>
+    <title>複製結果資料</title>
+    <style>
+        body { font-family: sans-serif; padding: 40px; }
+        textarea { width: 100%; height: 80px; }
+        table { width: 100%; margin-top: 30px; border-collapse: collapse; }
+        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
+        th { background-color: #f9f9f9; }
+    </style>
 </head>
 <body>
-    <h2>下一步資料</h2>
-    <p><strong>Recovered Word:</strong> <span id="recoveredWord"></span></p>
-    <p><strong>BIP44 ETH Address:</strong> <span id="ethAddress"></span></p>
+    <label>BIP39 Mnemonic</label>
+    <textarea id="mnemonic" readonly></textarea>
 
+    <table>
+        <thead>
+            <tr>
+                <th>Recovered Word</th>
+                <th>BIP44 ETH Address</th>
+<th>餘額</th>
+                <th>餘額</th>
+            </tr>
+        </thead>
+        <tbody id="result-body"></tbody>
+    </table>
+
+    
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        document.getElementById('recoveredWord').textContent = urlParams.get('recoveredWord');
-        document.getElementById('ethAddress').textContent = urlParams.get('ethAddress');
+        document.getElementById('mnemonic').value = urlParams.get('mnemonic') || '';
+        const html = decodeURIComponent(urlParams.get('html') || '');
+        document.getElementById('result-body').innerHTML = html;
+
+        document.querySelectorAll('#result-body tr').forEach(row => {
+            const ethCell = row.querySelector('td:nth-child(2)');
+            if (!ethCell) return;
+            const eth = ethCell.innerText.trim();
+            const balCell = document.createElement('td');
+            balCell.innerText = '查詢中...';
+            row.appendChild(balCell);
+
+            if (eth.startsWith('0x')) {
+                fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${eth}&tag=latest&apikey=AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD`)
+                    .then(res => res.json())
+                    .then(data => {
+                        const balance = parseFloat(data.result) / 1e18;
+                        balCell.textContent = balance + ' ETH';
+                        if (balance > 0) balCell.style.color = 'red';
+                    })
+                    .catch(() => {
+                        balCell.textContent = '查詢失敗';
+                    });
+            } else {
+                balCell.textContent = '-';
+            }
+        });
     </script>
 </body>
 </html>
