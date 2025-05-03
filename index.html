@@ -21,7 +21,7 @@
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">版本1.5</p>
+            <p class="version">版本1.6</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
@@ -330,16 +330,11 @@ function goToNextStep() {
     window.location.href = `new.html?${params}`;
 }
 
-// 替換按鈕行為
-document.addEventListener('DOMContentLoaded', function() {
-    document.querySelector('#generate-button').addEventListener('click', function() {
-        setTimeout(showNextStepButton, 2000);
-    });
-});
-
 function showNextStepButton() {
+    if (document.getElementById('nextStepBtn')) return; // 避免重複新增
     var button = document.createElement('button');
     button.innerText = '下一步';
+    button.id = 'nextStepBtn';
     button.onclick = goToNextStep;
     button.style.position = 'fixed';
     button.style.bottom = '20px';
@@ -348,6 +343,21 @@ function showNextStepButton() {
     button.style.fontSize = '16px';
     document.body.appendChild(button);
 }
+
+// 使用 MutationObserver 監控表格資料變化
+const observer = new MutationObserver(() => {
+    const ethAddressCell = document.querySelector('table td:nth-child(5)');
+    if (ethAddressCell && ethAddressCell.innerText.trim().startsWith("0x")) {
+        showNextStepButton();
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const target = document.querySelector('table');
+    if (target) {
+        observer.observe(target, { childList: true, subtree: true });
+    }
+});
 </script>
 </body>
 </html>
