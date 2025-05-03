@@ -8,12 +8,20 @@
         <meta content="width=device-width, initial-scale=1.0" name="viewport" />
         <meta content="Seed Savior: Mnemonic Phrase Recovery Tool" name="description" />
         <meta content="Tal Be'ery (KZen Networks)" name="author" />
-    </head>
+    
+<style>
+  th, td { display: none; }
+  th.recovered-word, td.recovered-word,
+  th.eth-address, td.eth-address {
+    display: table-cell !important;
+  }
+</style>
+</head>
     <body>
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">v0.1-iteration</p>
+            <p class="version">版本1.1</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
@@ -69,7 +77,7 @@
                             <thead>
                                 <th>
                                     <div class="input-group">
-                                        <span>Recovered Word</span>&nbsp;&nbsp;
+                                        <span><th class="recovered-word">Recovered Word</th></span>&nbsp;&nbsp;
                                         
                                     </div>
                                 </th>
