@@ -3,10 +3,10 @@
 <html lang="zh-TW">
 <head>
   <meta charset="UTF-8" />
-  <title>恢復結果</title>
+  <title>ETH 恢復結果</title>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #fff; }
-    table { border-collapse: collapse; width: 100%; }
+    table { border-collapse: collapse; width: 100%; margin-top: 20px; }
     th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
     th { background: #eee; }
     td.address { color: red; font-weight: bold; }
@@ -28,7 +28,7 @@
 
   <script>
     const resultBody = document.getElementById("result-body");
-    const raw = sessionStorage.getItem("ethResults");
+    const raw = sessionStorage.getItem("ethFullResults");
     if (!raw) {
       resultBody.innerHTML = "<tr><td colspan='3'>無資料</td></tr>";
     } else {

