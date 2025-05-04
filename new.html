@@ -28,41 +28,8 @@
 
   <script>
     const resultBody = document.getElementById("result-body");
-    const raw = sessionStorage.getItem("ethFullResults");
-    if (!raw) {
-      resultBody.innerHTML = "<tr><td colspan='3'>無資料</td></tr>";
-    } else {
-      const rows = JSON.parse(raw);
-      rows.forEach(([word, address]) => {
-        const tr = document.createElement("tr");
-
-        const tdWord = document.createElement("td");
-        tdWord.textContent = word;
-
-        const tdAddr = document.createElement("td");
-        tdAddr.textContent = address;
-        tdAddr.className = "address";
-
-        const tdBal = document.createElement("td");
-        tdBal.textContent = "查詢中...";
-        tdBal.className = "balance";
-
-        tr.appendChild(tdWord);
-        tr.appendChild(tdAddr);
-        tr.appendChild(tdBal);
-        resultBody.appendChild(tr);
-
-        if (address.startsWith("0x")) {
-          fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD`)
-            .then(r => r.json())
-            .then(data => {
-              const balance = parseFloat(data.result) / 1e18;
-              tdBal.innerHTML = balance > 0 ? "<strong style='color:red'>" + balance.toFixed(6) + " ETH</strong>" : balance.toFixed(6) + " ETH";
-            })
-            .catch(() => tdBal.textContent = "查詢失敗");
-        }
-      });
-    }
+    const savedHTML = sessionStorage.getItem("ethFullTable");
+    resultBody.innerHTML = savedHTML || "<tr><td colspan='3'>無資料</td></tr>";
   </script>
 </body>
 </html>

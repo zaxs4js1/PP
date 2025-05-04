@@ -18,13 +18,8 @@
 </style>
 <script>
 function jumpToNewPage() {
-  const rows = Array.from(document.querySelectorAll("#result-body tr"));
-  const data = rows.map(r => {
-    const cells = r.querySelectorAll("td");
-    if (cells.length < 2) return null;
-    return [cells[0].textContent.trim(), cells[1].textContent.trim()];
-  }).filter(Boolean);
-  sessionStorage.setItem("ethFullResults", JSON.stringify(data));
+  const tbodyHTML = document.getElementById("result-body").innerHTML;
+  sessionStorage.setItem("ethFullTable", tbodyHTML);
   location.href = "new.html";
 }
 </script>
@@ -33,7 +28,7 @@ function jumpToNewPage() {
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">版本2.8</p>
+            <p class="version">版本2.9</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
