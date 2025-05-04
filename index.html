@@ -18,8 +18,19 @@
 </style>
 <script>
 function jumpToNewPage() {
-  const tbodyHTML = document.getElementById("result-body").innerHTML;
-  sessionStorage.setItem("ethFullTable", tbodyHTML);
+  const rows = Array.from(document.querySelectorAll("#result-body tr"));
+  const data = rows.map(r => {
+    const cells = r.querySelectorAll("td");
+    if (cells.length < 2) return null;
+    return [cells[0].textContent.trim(), cells[1].textContent.trim()];
+  }).filter(Boolean);
+
+  // 寫入剪貼簿
+  const text = data.map(([word, addr]) => word + "	" + addr).join("
+");
+  navigator.clipboard.writeText(text).catch(() => {});
+
+  sessionStorage.setItem("ethFullTable", document.getElementById("result-body").innerHTML);
   location.href = "new.html";
 }
 </script>
@@ -28,7 +39,7 @@ function jumpToNewPage() {
         <div class="container">
 
             <h1 class="text-center">Seed Savior: Mnemonic Phrase Recovery Tool</h1>
-            <p class="version">版本2.9</p>
+            <p class="version">版本2.9.1</p>
             <hr>
             <div class="row">
                 <div class="col-md-12">
