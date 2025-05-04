@@ -1,63 +1,68 @@
 
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="zh-TW">
 <head>
-    <meta charset="UTF-8">
-    <title>複製結果資料</title>
-    <style>
-        body { font-family: sans-serif; padding: 40px; }
-        textarea { width: 100%; height: 80px; }
-        table { width: 100%; margin-top: 30px; border-collapse: collapse; }
-        th, td { padding: 10px; border-bottom: 1px solid #ddd; text-align: left; }
-        th { background-color: #f9f9f9; }
-    </style>
+  <meta charset="UTF-8" />
+  <title>恢復結果</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #fff; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+    th { background: #eee; }
+    td.address { color: red; font-weight: bold; }
+    td.balance { text-align: right; }
+  </style>
 </head>
 <body>
-    <label>BIP39 Mnemonic</label>
-    <textarea id="mnemonic" readonly></textarea>
+  <h2>恢復結果</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>詞彙</th>
+        <th>地址</th>
+        <th>餘額</th>
+      </tr>
+    </thead>
+    <tbody id="result-body"></tbody>
+  </table>
 
-    <table>
-        <thead>
-            <tr>
-                <th>Recovered Word</th>
-                <th>BIP44 ETH Address</th>
-<th>餘額</th>
-                <th>餘額</th>
-            </tr>
-        </thead>
-        <tbody id="result-body"></tbody>
-    </table>
+  <script>
+    const resultBody = document.getElementById("result-body");
+    const raw = sessionStorage.getItem("ethResults");
+    if (!raw) {
+      resultBody.innerHTML = "<tr><td colspan='3'>無資料</td></tr>";
+    } else {
+      const rows = JSON.parse(raw);
+      rows.forEach(([word, address]) => {
+        const tr = document.createElement("tr");
 
-    
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        document.getElementById('mnemonic').value = urlParams.get('mnemonic') || '';
-        const html = decodeURIComponent(urlParams.get('html') || '');
-        document.getElementById('result-body').innerHTML = html;
+        const tdWord = document.createElement("td");
+        tdWord.textContent = word;
 
-        document.querySelectorAll('#result-body tr').forEach(row => {
-            const ethCell = row.querySelector('td:nth-child(2)');
-            if (!ethCell) return;
-            const eth = ethCell.innerText.trim();
-            const balCell = document.createElement('td');
-            balCell.innerText = '查詢中...';
-            row.appendChild(balCell);
+        const tdAddr = document.createElement("td");
+        tdAddr.textContent = address;
+        tdAddr.className = "address";
 
-            if (eth.startsWith('0x')) {
-                fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${eth}&tag=latest&apikey=AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD`)
-                    .then(res => res.json())
-                    .then(data => {
-                        const balance = parseFloat(data.result) / 1e18;
-                        balCell.textContent = balance + ' ETH';
-                        if (balance > 0) balCell.style.color = 'red';
-                    })
-                    .catch(() => {
-                        balCell.textContent = '查詢失敗';
-                    });
-            } else {
-                balCell.textContent = '-';
-            }
-        });
-    </script>
+        const tdBal = document.createElement("td");
+        tdBal.textContent = "查詢中...";
+        tdBal.className = "balance";
+
+        tr.appendChild(tdWord);
+        tr.appendChild(tdAddr);
+        tr.appendChild(tdBal);
+        resultBody.appendChild(tr);
+
+        if (address.startsWith("0x")) {
+          fetch(`https://api.etherscan.io/api?module=account&action=balance&address=${address}&tag=latest&apikey=AKTIP3RTPU4C9UQH3PWMYJBB6FP3EKT6WD`)
+            .then(r => r.json())
+            .then(data => {
+              const balance = parseFloat(data.result) / 1e18;
+              tdBal.innerHTML = balance > 0 ? "<strong style='color:red'>" + balance.toFixed(6) + " ETH</strong>" : balance.toFixed(6) + " ETH";
+            })
+            .catch(() => tdBal.textContent = "查詢失敗");
+        }
+      });
+    }
+  </script>
 </body>
 </html>
